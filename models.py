@@ -9,13 +9,11 @@ Created on Thu Mar  8 17:43:51 2018
 from keras.layers import *
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.merge import Add
-from keras import optimizers
 from keras.layers.normalization import BatchNormalization
-from keras.models import Model, model_from_json
-from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Model
 from keras import backend as K
-from keras.utils import to_categorical, plot_model
-from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
+from keras.utils import plot_model
+
 
 #%%
 class ResNet():
