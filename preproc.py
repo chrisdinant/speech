@@ -3,7 +3,7 @@
 """
 Created on Fri Mar  9 10:24:54 2018
 
-@author: christoffel
+@author: chris
 """
 
 import numpy as np
@@ -24,7 +24,7 @@ classes = ['yes', 'no',
 
 
 #%%
-def make_spec(file, file_dir=train_dir, flip = False, ps = False, st = 4):
+def make_spec(file, file_dir = train_dir, flip = False, ps = False, st = 4):
     """
     create a melspectrogram from the amplitude of the sound
     
@@ -42,7 +42,7 @@ def make_spec(file, file_dir=train_dir, flip = False, ps = False, st = 4):
         sig = np.pad(sig, (0,16000-len(sig)), 'constant', constant_values = 0)
     if ps:
         sig = librosa.effects.pitch_shift(sig, rate, st)
-    D = librosa.amplitude_to_db(librosa.stft(sig[:16000], n_fft=512, 
+    D = librosa.amplitude_to_db(librosa.stft(sig[:16000], n_fft = 512, 
                                              hop_length = 128, 
                                              center = False), ref = np.max)
     S = librosa.feature.melspectrogram(S=D, n_mels = 85).T
@@ -54,8 +54,17 @@ def make_spec(file, file_dir=train_dir, flip = False, ps = False, st = 4):
 
 #%%
 def create_silence():
+    return
     
 #%% list all files
+    
+val_list = open('./data/train/validation_list.txt')
+validation_list = [row[0] for row in csv.reader(val_list)]
+assert len(validation_list) == 6798, 'file not loaded'
+
+test_list = open('./data/train/testing_list.txt')
+testing_list = [row[0] for row in csv.reader(test_list)]
+assert len(testing_list) == 6835, 'file not loaded'
 
 
     
