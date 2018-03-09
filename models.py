@@ -20,6 +20,7 @@ class ResNet():
     """
     Usage: 
         sr = ResNet([4,8,16], input_size=(50,50,1), output_size=12)
+        sr.build()
         followed by sr.m.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=["accuracy"])
         save plotted model with: keras.utils.plot_model(sr.m, to_file = '<location>.png', show_shapes=True)
     """
@@ -69,15 +70,16 @@ class ResNet():
         x = Add()([self._block(self.filters_list[0], x),x])
         x = Add()([self._block(self.filters_list[0], x),x])
         x = Add()([self._block(self.filters_list[0], x),x])
-        for filt in self.filters_list[1:]:
-            x = Conv2D(filt, (3,3),
-                       strides = (2,2),
-                       padding = 'same',
-                       activation = 'relu',
-                       kernel_initializer = self.initializer)(x)
-            x = Add()([self._block(filt, x),x])
-            x = Add()([self._block(filt, x),x])
-            x = Add()([self._block(filt, x),x])
+        if len(self.filters_list) > 1:
+            for filt in self.filters_list[1:]:
+                x = Conv2D(filt, (3,3),
+                           strides = (2,2),
+                           padding = 'same',
+                           activation = 'relu',
+                           kernel_initializer = self.initializer)(x)
+                x = Add()([self._block(filt, x),x])
+                x = Add()([self._block(filt, x),x])
+                x = Add()([self._block(filt, x),x])
         x = GlobalAveragePooling2D()(x)
         x = Dense(self.output_size, activation = 'softmax')(x)
         
