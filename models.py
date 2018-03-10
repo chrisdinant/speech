@@ -21,8 +21,11 @@ class ResNet():
     Usage: 
         sr = ResNet([4,8,16], input_size=(50,50,1), output_size=12)
         sr.build()
-        followed by sr.m.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=["accuracy"])
-        save plotted model with: keras.utils.plot_model(sr.m, to_file = '<location>.png', show_shapes=True)
+        followed by sr.m.compile(loss='categorical_crossentropy', 
+                                 optimizer='adadelta', metrics=["accuracy"])
+        save plotted model with: 
+            keras.utils.plot_model(sr.m, to_file = '<location>.png', 
+                                   show_shapes=True)
     """
     def __init__(self,
                  filters_list=[], 
@@ -62,7 +65,7 @@ class ResNet():
         Returns:
             keras.engine.training.Model
         """
-        i = Input(shape=self.input_size, name = 'input')
+        i = Input(shape = self.input_size, name = 'input')
         x = Conv2D(self.filters_list[0], (3,3), 
                    padding = 'same', 
                    kernel_initializer = self.initializer)(i)
@@ -88,11 +91,67 @@ class ResNet():
            
     
 #%%
+class CTC():
+    """
+    Usage:
         
-
-
+    """       
+    def __init__(self,
+                 input_size=None, 
+                 output_size=None,
+                 initializer='glorot_uniform'):
+        self.input_size = input_size
+        self.output_size = output_size
+        self.initializer = initializer
+        self.m = None
+        self.tm = None
         
-        
+    def _ctc_lambda_func(self, args):
+        y_pred, labels, input_length, label_length = args    
+        return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+    
+    def build(self, 
+              conv_filters = 196,
+              conv_size = 13,
+              conv_strides = 4,
+              act = 'relu',
+              rnn_layers = 2,
+              LSTM_units = 128,
+              drop_out = 0.8):
+        i = Input(shape = self.input_size, name = 'input')
+        x = Conv1D(conv_filters, 
+                   conv_size, 
+                   strides = conv_strides, 
+                   name = 'conv1d')(i)
+        x = BatchNormalization()(x)
+        x = Activation(act)(x)
+        for _ in rnn_layers:          
+            x = Bidirectional(LSTM(LSTM_units, 
+                                   return_sequences = True))(x)
+            x = Dropout(drop_out)(x)
+            x = BatchNormalization()(x)
+        y_pred = TimeDistributed(Dense(self.output_size, 
+                                       activation = 'softmax'))(x)        
+        # ctc inputs
+        labels = Input(name='the_labels', shape=[None,], dtype='int32')
+        input_length = Input(name='input_length', shape=[1], dtype='int32')
+        label_length = Input(name='label_length', shape=[1], dtype='int32')    
+        # Keras doesn't currently support loss funcs with extra parameters
+        # so CTC loss is implemented in a lambda layer
+        loss_out = Lambda(_ctc_lambda_func, 
+                          output_shape=(1,), 
+                          name='ctc')([y_pred,
+                                        labels,
+                                        input_length,
+                                        label_length])        
+        self.tm = Model(inputs = i,
+                        outputs = y_pred)
+        self.m = Model(inputs = [i, 
+                                 labels, 
+                                 input_length, 
+                                 label_length], 
+                        outputs = loss_out)
+        return self.m, self.tm
         
         
         
