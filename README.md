@@ -6,3 +6,5 @@ In this repo I have implementations of a ResNet and a CTC speech-to-text model.
 Start with the preproc notebook to get the training and validation arrays. Then train.ipynb.
 
 You will need a data/, a graphs/, a logs/ and a models/ directory for the save files.
+
+![alt text](https://github.com/chrisdinant/speech/raw/master/confmat.png)
