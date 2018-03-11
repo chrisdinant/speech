@@ -92,8 +92,8 @@ class ResNet():
     
 #%%
 def ctc_lambda_func(args):
-        y_pred, labels, input_length, label_length = args    
-        return K.ctc_batch_cost(labels, y_pred, input_length, label_length)    
+    y_pred, labels, input_length, label_length = args    
+    return K.ctc_batch_cost(labels, y_pred, input_length, label_length)    
     
         
 #%%
