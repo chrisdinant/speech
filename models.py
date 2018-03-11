@@ -91,10 +91,19 @@ class ResNet():
            
     
 #%%
+def ctc_lambda_func(args):
+        y_pred, labels, input_length, label_length = args    
+        return K.ctc_batch_cost(labels, y_pred, input_length, label_length)    
+    
+        
+#%%
 class CTC():
     """
     Usage:
-        
+        sr_ctc = CTC(enter input_size and output_size)
+        sr_ctc.build()
+        sr_ctc.m.compile()
+        sr_ctc.tm.compile()
     """       
     def __init__(self,
                  input_size=None, 
@@ -105,11 +114,7 @@ class CTC():
         self.initializer = initializer
         self.m = None
         self.tm = None
-        
-    def _ctc_lambda_func(self, args):
-        y_pred, labels, input_length, label_length = args    
-        return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
-    
+                   
     def build(self, 
               conv_filters = 196,
               conv_size = 13,
@@ -118,6 +123,19 @@ class CTC():
               rnn_layers = 2,
               LSTM_units = 128,
               drop_out = 0.8):
+        """
+        build CTC training model (self.m) and 
+        prediction model without the ctc loss function (self.tm)
+        
+        Usage: 
+            enter conv parameters for Cov1D layer
+            specify number of rnn layers, LSTM units and dropout
+        Args:
+            
+        Returns:
+            self.m: keras.engine.training.Model
+            self.tm: keras.engine.training.Model
+        """        
         i = Input(shape = self.input_size, name = 'input')
         x = Conv1D(conv_filters, 
                    conv_size, 
@@ -125,7 +143,7 @@ class CTC():
                    name = 'conv1d')(i)
         x = BatchNormalization()(x)
         x = Activation(act)(x)
-        for _ in rnn_layers:          
+        for _ in range(rnn_layers):          
             x = Bidirectional(LSTM(LSTM_units, 
                                    return_sequences = True))(x)
             x = Dropout(drop_out)(x)
@@ -138,7 +156,7 @@ class CTC():
         label_length = Input(name='label_length', shape=[1], dtype='int32')    
         # Keras doesn't currently support loss funcs with extra parameters
         # so CTC loss is implemented in a lambda layer
-        loss_out = Lambda(_ctc_lambda_func, 
+        loss_out = Lambda(ctc_lambda_func, 
                           output_shape=(1,), 
                           name='ctc')([y_pred,
                                         labels,
