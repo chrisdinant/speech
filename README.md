@@ -7,4 +7,6 @@ Start with the preproc notebook to get the training and validation arrays. Then 
 
 You will need a data/, a graphs/, a logs/ and a models/ directory for the save files.
 
+*speech-to-text inspired by https://github.com/robmsmt/KerasDeepSpeech*
+
 ![alt text](https://github.com/chrisdinant/speech/raw/master/confmat.png)
